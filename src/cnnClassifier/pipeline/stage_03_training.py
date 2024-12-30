@@ -2,7 +2,11 @@ from cnnClassifier.config.configuration import ConfigurationManager
 from cnnClassifier.components.prepare_callbacks import PrepareCallback
 from cnnClassifier.components.training import Training
 from cnnClassifier import logger
+import tensorflow as tf
 
+
+# Enable eager execution of tf.data functions
+tf.data.experimental.enable_debug_mode()
 
 
 STAGE_NAME = "Training"
@@ -23,6 +27,20 @@ class ModelTrainingPipeline:
         training = Training(config=training_config)
         training.get_base_model()
         training.train_valid_generator()
+        
+        # Recreate the optimizer instance after the model's variables have been defined
+        optimizer = tf.keras.optimizers.Adam()
+        loss = tf.keras.losses.CategoricalCrossentropy()
+        metrics = ['accuracy']
+        
+        # Compile the model with the new optimizer
+        training.model.compile(optimizer=optimizer, 
+                                  loss=loss, 
+                                  metrics=metrics)
+        
+        # Enable eager execution
+        tf.config.run_functions_eagerly(True)
+        
         training.train(
             callback_list=callback_list
         )
@@ -40,4 +58,3 @@ if __name__ == '__main__':
     except Exception as e:
         logger.exception(e)
         raise e
-        
