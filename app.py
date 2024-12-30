@@ -40,7 +40,6 @@ def predictRoute():
     result = clApp.classifier.predict()
     return jsonify(result)
 
-
 if __name__ == "__main__":
     clApp = ClientApp()
     app.run(host='0.0.0.0', port=8080) #local host
